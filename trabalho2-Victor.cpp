@@ -12,6 +12,9 @@ using namespace std;
 //Quantos filhos a serem criados
 #define NUM_PROC 3
 
+//Para ativar prints extras coloque 1
+#define DEBUG 0
+
 list <pid_t> lista_filhos;
 auto it = lista_filhos.begin();
 pid_t filho_em_exec = -1;
@@ -39,7 +42,7 @@ pid_t filho()
 void RR(int sig)
 {
   alarm(0);
-  cout << "[Pai " << getpid() << "] ALARM!" << endl;
+  if (DEBUG) cout << "[Pai " << getpid() << "] ALARM!" << endl;
   alarm(5);
 
   //Iterador para percorrer a lista
@@ -49,7 +52,7 @@ void RR(int sig)
   while(it != lista_filhos.end()) {
     if (*it == filho_em_exec || filho_em_exec == -1) {
       kill(*it, SIGSTOP);
-      cout << "[Pai " << getpid() << "] Pausei: " << *it << endl;
+      if (DEBUG) cout << "[Pai " << getpid() << "] Pausei: " << *it << endl;
     }
     advance(it,1);
   }
@@ -61,7 +64,7 @@ void RR(int sig)
   advance(it,vez);
 
   //Manda continuar o próximo filho escalonado
-  cout << "[Pai " << getpid() << "] Vez de: " << *it << endl;
+  if (DEBUG) cout << "[Pai " << getpid() << "] Vez de: " << *it << endl;
   kill(*it, SIGCONT);
   filho_em_exec = *it;
 
@@ -75,15 +78,15 @@ int main()
   pid_t filho_finalizado;
   signal(SIGALRM, RR);
 
-  cout << "[Pai " << getpid() << "] Criei os filhos: ";
+  if (DEBUG) cout << "[Pai " << getpid() << "] Criei os filhos: ";
 
   //Cria 'NUM_PROC' filhos e adiciona na lista do escalonador
   for (int i = 0; i < NUM_PROC; i++) {
     filho_finalizado = filho();
-    cout << filho_finalizado << " ";
+    if (DEBUG) cout << filho_finalizado << " ";
     lista_filhos.push_back(filho_finalizado);
   }
-  cout << endl;
+  if (DEBUG) cout << endl;
 
   //Ativa o Round Robin
   RR(0);
@@ -96,7 +99,7 @@ int main()
 
   alarm(0);
 
-  cout << "[Pai " << getpid() << "] Fim!" << endl;
+  if (DEBUG) cout << "[Pai " << getpid() << "] Fim!" << endl;
 
   exit(EXIT_SUCCESS);
 }
