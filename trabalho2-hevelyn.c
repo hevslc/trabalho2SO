@@ -88,46 +88,37 @@ int main(){
   pidlist->next = NULL;
 
   int ppid = createStopRecur(child, pidlist);
+
   clock_t te = clock();
 
   // father process execution block
   if(getpid() == ppid){
-    int k=1;
     while(len != 0){                // while there are processes in the list
       childpid *previous = pidlist; // keeps pointer of the previous item
       for(childpid *p = pidlist->next; p != NULL; p = p->next){
         clock_t t = clock(); 
         int ret;
-        double ti;
-        printf("\n\n%d resume %d\n", k, p->pid);
 
         resumeProcess(p->pid);
 
-        while(ret = waitpid(p->pid, &status, WNOHANG) == 0 && (ti = getTime(t)) < QUANTUM);
+        while(ret = waitpid(p->pid, &status, WNOHANG) == 0 && (getTime(t)) < QUANTUM);
         
-        if(ret = waitpid(p->pid, &status, WNOHANG) == 0){ // quantum, but the process is not over yet
+        if(ret = waitpid(p->pid, &status, WNOHANG) == 0) // quantum, but the process is not over yet
           stopProcess(p->pid); 
-          printf("stopping %d\n", p->pid);
-        }
+
         else if(WIFEXITED(status)){ // process ended
-          printf("tempo %f\n", ti);
-          printf("removendo %d\n", p->pid);
           removeNext(previous);
           p = previous;
           len--;
         }
-        else printf("child did not exit successfully\n");
-        
         previous = p;
-      } 
-      k++;    
+      }   
     }
   }
 
   // child processes execution block
   else{
     for(long int i=0; i<20000000000; i++); 
-    te = clock() - te;
     printf("pid: %d runtime: %f \n", getpid(), getTime(te));
   }
 
