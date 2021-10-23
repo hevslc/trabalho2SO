@@ -96,16 +96,19 @@ int main(){
     while(len != 0){                // while there are processes in the list
       childpid *previous = pidlist; // keeps pointer of the previous item
       for(childpid *p = pidlist->next; p != NULL; p = p->next){
-        clock_t t = clock(); 
         int ret;
 
         resumeProcess(p->pid);
+        printf("\nProcess %d resumed\n", p->pid);
+        clock_t t = clock(); 
+        double tend;
 
-        while(ret = waitpid(p->pid, &status, WNOHANG) == 0 && (getTime(t)) < QUANTUM);
+        while(ret = waitpid(p->pid, &status, WNOHANG) == 0 && (tend = getTime(t)) < QUANTUM);
         
-        if(ret = waitpid(p->pid, &status, WNOHANG) == 0) // quantum, but the process is not over yet
+        if(ret = waitpid(p->pid, &status, WNOHANG) == 0) {// quantum, but the process is not over yet
+          printf("Process %d stopping after %f seconds\n", p->pid, tend);
           stopProcess(p->pid); 
-
+        }
         else if(WIFEXITED(status)){ // process ended
           removeNext(previous);
           p = previous;
