@@ -110,6 +110,7 @@ int main(){
           stopProcess(p->pid); 
         }
         else if(WIFEXITED(status)){ // process ended
+          printf("Process %d removed from process queue after %f seconds\n", p->pid, tend);
           removeNext(previous);
           p = previous;
           len--;
